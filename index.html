@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tap Fireworks</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: radial-gradient(1200px 600px at 50% 70%, #0b0f1c, #02040a 60%, #000 100%);
+      overflow: hidden;
+      touch-action: manipulation; /* avoid double-tap zoom on mobile */
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      color: #ddd;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    }
+    #canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hint {
+      position: fixed;
+      inset: auto 12px 12px 12px;
+      text-align: center;
+      font-size: 14px;
+      opacity: .7;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" aria-label="fireworks canvas" role="img"></canvas>
+  <div class="hint">画面をタップ/クリックすると赤い花火が上がります（一定時間で消滅）</div>
+
+  <script>
+  (() => {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // ---- Canvas Setup (retina scaling) ----
+    function resize() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const { clientWidth: w, clientHeight: h } = canvas;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+    }
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    // ---- Particle System ----
+    const FIREWORK_LIFETIME = 1200; // ms (全体の寿命)
+    const PARTICLE_COUNT = 80;      // 粒の数
+    const PARTICLE_SPEED = 180;     // px/s 初速スカラー
+    const GRAVITY = 220;            // px/s^2
+    const DRAG = 0.98;              // 速度減衰（空気抵抗）
+
+    /** @type {Array<Firework>} */
+    const fireworks = [];
+
+    class Particle {
+      constructor(x, y, vx, vy, life) {
+        this.x = x; this.y = y;
+        this.vx = vx; this.vy = vy;
+        this.life = life;          // ms 残存寿命
+        this.alive = true;
+      }
+      step(dt) { // dt: ms
+        if (!this.alive) return;
+        // 速度更新
+        this.vy += GRAVITY * (dt / 1000);
+        this.vx *= DRAG; this.vy *= DRAG;
+        // 位置更新
+        this.x += this.vx * (dt / 1000);
+        this.y += this.vy * (dt / 1000);
+        // 寿命更新
+        this.life -= dt;
+        this.alive = this.life > 0;
+      }
+      draw(ctx, alpha) {
+        // 赤色一色（今後拡張可）
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = 'rgb(255, 40, 40)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    class Firework {
+      constructor(x, y) {
+        this.startTime = performance.now();
+        this.life = FIREWORK_LIFETIME; // ms
+        this.particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const angle = (i / PARTICLE_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.12;
+          const speed = PARTICLE_SPEED * (0.6 + Math.random() * 0.8);
+          const vx = Math.cos(angle) * speed;
+          const vy = Math.sin(angle) * speed;
+          // 粒の寿命は少しばらつかせる
+          const life = FIREWORK_LIFETIME * (0.6 + Math.random() * 0.6);
+          this.particles.push(new Particle(x, y, vx, vy, life));
+        }
+        // 中心の閃光
+        this.core = new Particle(x, y, 0, 0, FIREWORK_LIFETIME * 0.4);
+      }
+      step(dt) {
+        this.life -= dt;
+        for (const p of this.particles) p.step(dt);
+        this.core.step(dt);
+      }
+      get alive() {
+        return this.life > 0 && (this.particles.some(p => p.alive) || this.core.alive);
+      }
+      draw(ctx) {
+        const elapsed = performance.now() - this.startTime;
+        const t = Math.min(1, Math.max(0, 1 - elapsed / FIREWORK_LIFETIME));
+        // フェードアウトカーブ（後半で急激に消える）
+        const alpha = Math.pow(t, 1.6);
+        for (const p of this.particles) if (p.alive) p.draw(ctx, alpha);
+        if (this.core.alive) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = alpha;
+          const r = 3 + 8 * (1 - alpha);
+          ctx.fillStyle = 'rgb(255, 80, 80)';
+          ctx.beginPath();
+          ctx.arc(this.core.x, this.core.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // ---- Animation Loop ----
+    let last = performance.now();
+    function loop(now) {
+      const dt = Math.min(50, now - last); // clamp to avoid huge steps
+      last = now;
+
+      // 背景を少し残してクリア（残像が心地よい）
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      // 更新 & 描画
+      for (const fw of fireworks) fw.step(dt);
+      for (const fw of fireworks) fw.draw(ctx);
+
+      // 死んだ花火を掃除
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        if (!fireworks[i].alive) fireworks.splice(i, 1);
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+    // ---- Spawn ----
+    function spawnAtClient(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      fireworks.push(new Firework(x, y));
+    }
+
+    window.addEventListener('pointerdown', (e) => {
+      spawnAtClient(e.clientX, e.clientY);
+    }, { passive: true });
+
+    // 初回サイズ合わせ
+    resize();
+  })();
+  </script>
+</body>
+</html>
+
