@@ -1,10 +1,14 @@
+import { toRgbString } from "../utils/color.js";
 export class Particle {
-  constructor(x, y, vx, vy, life) {
+  constructor(x, y, vx, vy, life, color = { r: 255, g: 40, b: 40 }) {
     this.x = x; this.y = y;
     this.vx = vx; this.vy = vy;
     this.life = life;
+    this.color = color;
     this.alive = true;
   }
+
+  //更新処理
   step(dt) {
     if (!this.alive) return;
     this.vy += 220 * (dt / 1000); // GRAVITY
@@ -17,7 +21,7 @@ export class Particle {
   draw(ctx, alpha) {
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = Math.max(0, alpha);
-    ctx.fillStyle = 'rgb(255, 40, 40)';
+    ctx.fillStyle = toRgbString(this.color);
     ctx.beginPath();
     ctx.arc(this.x, this.y, 2.2, 0, Math.PI * 2);
     ctx.fill();
