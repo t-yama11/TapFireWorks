@@ -1,3 +1,10 @@
+/* 追加：パネル色を変数化（黒に近い灰色） */
+:root {
+  --panel-bg: #0f1216;              /* 設定パネルの背景色 */
+  --panel-border: rgba(255,255,255,.14);
+  --panel-border-hover: rgba(255,255,255,.28);
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -26,31 +33,36 @@ html, body {
   opacity: .7;
   pointer-events: none;
 }
-.settingBtn {
+.settingBtn,
+.top-left-btn,
+.btn-settings {
   position: fixed;
   top: 16px;
   left: 16px;
   z-index: 10;
-  background: #22272a;
+  background: var(--panel-bg);               /* ← 統一 */
+  border: 1px solid var(--panel-border);
   color: #eee;
-  border: none;
   border-radius: 6px;
   padding: 8px 20px;
   font-size: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);    /* 視認性のための軽い影 */
   cursor: pointer;
   opacity: 0.92;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
-.settingBtn:hover {
-  background: #2c3136;
+.settingBtn:hover,
+.top-left-btn:hover,
+.btn-settings:hover {
+  background: var(--panel-bg);
+  border-color: var(--panel-border-hover);
   opacity: 1;
 }
 /* 設定パネル（左1/4・キャンバス上） */
 .settings-panel {
   position: fixed; top: 0; left: 0; height: 100vh;
   width: clamp(240px, 25vw, 400px); /* 左1/4の目安 */
-  background: #0f1216;            /* 黒に近い灰色 */
+  background: var(--panel-bg);            /* 変数で統一 */
   color: #eee;
   box-shadow: 6px 0 24px rgba(0,0,0,.6);
   transform: translateX(-100%);    /* 初期は隠す */
