@@ -26,26 +26,6 @@ html, body {
   opacity: .7;
   pointer-events: none;
 }
-.top-left-btn {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10; /* 既に高い値なのでOK */
-  background: #22272a;
-  color: #eee;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 20px;
-  font-size: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  cursor: pointer;
-  opacity: 0.92;
-  transition: background 0.2s;
-}
-.top-left-btn:hover {
-  background: #2c3136;
-  opacity: 1;
-}
 .settingBtn {
   position: fixed;
   top: 16px;
