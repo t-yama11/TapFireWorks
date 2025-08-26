@@ -7,8 +7,32 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <button class="settingBtn">⚙️ 色設定 ＞</button>
   <canvas id="canvas" aria-label="fireworks canvas" role="img"></canvas>
+  <!-- 左上：設定トグルボタン（非表示＝＞、表示＝＜） -->
+  <button
+    class="settingBtn"
+    id="settingsToggle"
+    type="button"
+    aria-controls="settingsPanel"
+    aria-expanded="false"
+    aria-label="花火の色設定を開閉"
+  >⚙️ 色設定 ＞</button>
+
+  <!-- 左側1/4のスライドパネル（黒に近い灰色） -->
+  <aside
+    id="settingsPanel"
+    class="settings-panel"
+    aria-hidden="true"
+    role="complementary"
+  >
+    <header class="panel-header">
+      <h2>設定</h2>
+    </header>
+    <div class="panel-body">
+      <!-- ここに設定UI（色リスト等）を配置予定 -->
+      <p style="opacity:.8">ここに花火の色設定を配置します。</p>
+    </div>
+  </aside>
   <div class="hint">画面をタップ/クリックすると赤い花火が上がります（一定時間で消滅）</div>
 
   <script type="module" src="./js/main.js"></script>

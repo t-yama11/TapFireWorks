@@ -16,7 +16,8 @@ if (canvas) {
 }
 
 /* ========== 設定ボタンの表示切り替え ========== */
-const settingBtn = document.querySelector('.settingBtn'); // クラス名を修
+const settingBtn = document.querySelector('.settingBtn');
+const panel = document.getElementById('settingsPanel');
 
 // ボタンが <button> の場合は type=button を保証（フォーム内でも安全）
 if (settingBtn instanceof HTMLButtonElement && !settingBtn.type) {
@@ -29,12 +30,29 @@ function renderToggleUI() {
   settingBtn.textContent = isOpen ? '⚙️ 色設定 ＜' : '⚙️ 色設定 ＞';
   settingBtn.setAttribute('aria-expanded', String(isOpen));
 }
+function openPanel()
+{
+  isOpen = true;
+  if (panel) {
+    panel.setAttribute('aria-hidden', 'false');
+  }
+  renderToggleUI();
+}
+function closePanel()
+{
+  isOpen = false;
+  if (panel) {
+    panel.setAttribute('aria-hidden', 'true');
+  }
+  renderToggleUI();
+}
 
 if (settingBtn) {
-  settingBtn.addEventListener('click', () => {
-    isOpen = !isOpen;
-    renderToggleUI();
-    // 実際の設定UIの表示/非表示はここで実装
-    // 例: document.querySelector('.settings-panel').style.display = isOpen ? 'block' : 'none';
+  if (settingBtn instanceof HTMLButtonElement && !settingBtn.type) {
+    settingBtn.type = 'button';
+  }
+  settingBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isOpen ? closePanel() : openPanel();
   });
 }
