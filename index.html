@@ -24,17 +24,52 @@
     class="settings-panel"
     aria-hidden="true"
     role="complementary"
+    aria-labelledby="panelTitle"
   >
     <header class="panel-header">
-      <h2>設定</h2>
+      <div class="panel-title-wrap">
+        <h2 id="panelTitle">色設定</h2>
+        <span id="countBadge" class="count-badge" aria-live="polite">3/10</span>
+      </div>
+      <p class="panel-rules">最低1色・最大10色・重複不可。閉じると設定が反映されます。</p>
     </header>
+
+    <!-- 操作バー（上部固定）：ピッカー + HEX + 追加 + 行内エラー表示 -->
+    <div class="toolbar" role="group" aria-label="色の追加">
+      <input id="colorPicker" type="color" value="#28ff64" aria-label="色を選択" />
+      <input id="hexInput" type="text" inputmode="text" aria-label="HEXコード" value="#28ff64" />
+      <button id="addBtn" class="btn primary" type="button" aria-label="色を追加">追加</button>
+      <span id="addError" class="error" role="alert" aria-live="polite"></span>
+    </div>
+
+    <!-- 並べ替えリスト（スクロール領域） -->
     <div class="panel-body">
-      <!-- ここに設定UI（色リスト等）を配置予定 -->
-      <p style="opacity:.8">ここに花火の色設定を配置します。</p>
+      <ul id="colorList" class="color-list" role="list" aria-label="登録済みの色">
+        <!-- サンプル行（内部処理未実装なので静的。後でJS実装と差し替え） -->
+        <li class="color-row" role="listitem" data-hex="#28ff64">
+          <button class="drag-handle" type="button" aria-label="行を並べ替え">⋮⋮</button>
+          <span class="swatch" aria-hidden="true" style="--sw:#28ff64;"></span>
+          <code class="hex">#28ff64</code>
+          <button class="remove-btn" type="button" aria-label="#28ff64 を削除">削除</button>
+        </li>
+        <li class="color-row" role="listitem" data-hex="#ff4040">
+          <button class="drag-handle" type="button" aria-label="行を並べ替え">⋮⋮</button>
+          <span class="swatch" aria-hidden="true" style="--sw:#ff4040;"></span>
+          <code class="hex">#ff4040</code>
+          <button class="remove-btn" type="button" aria-label="#ff4040 を削除">削除</button>
+        </li>
+        <li class="color-row" role="listitem" data-hex="#40a0ff">
+          <button class="drag-handle" type="button" aria-label="行を並べ替え">⋮⋮</button>
+          <span class="swatch" aria-hidden="true" style="--sw:#40a0ff;"></span>
+          <code class="hex">#40a0ff</code>
+          <!-- 最低1色担保の見た目例：最後の1色なら disabled にする想定 -->
+          <button class="remove-btn" type="button" aria-label="#40a0ff を削除">削除</button>
+        </li>
+      </ul>
     </div>
   </aside>
-  <div class="hint">画面をタップ/クリックすると赤い花火が上がります（一定時間で消滅）</div>
 
+  <div class="hint">画面をクリックすると花火が上がります（左上ボタンで設定パネル開閉）</div>
   <script type="module" src="./js/main.js"></script>
 </body>
 </html>
